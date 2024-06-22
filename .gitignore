@@ -1,4 +1,6 @@
 venv
+.venv
 .env
 credentials.json
 token.json
+cloud_key.json
