@@ -1,22 +1,16 @@
 import os, json, ast, re
+import requests as requests
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain_text_splitters import CharacterTextSplitter
-from langchain_chroma import Chroma
-from langchain.agents import AgentExecutor, create_json_chat_agent
-from langchain_community.tools.tavily_search import TavilySearchResults
-
-from langchain import hub
+from PIL import Image
+from io import BytesIO
 from langchain import PromptTemplate
-from langchain.tools import BaseTool
-from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
 def get_presentation(text):
     load_dotenv()
-
-    openai_api_key = os.getenv('OPENAI_API_KEY')
-
+    unsplash_api_key = os.getenv('UNSPLASH_API_KEY')
+    openai_api_key = os.getenv('OPENAI_API_KEY')    
     system_points_prompt = """You are a point maker. You are given an input in the following form
 
     TITLE OF PRESENTATION
@@ -87,6 +81,25 @@ def get_presentation(text):
     Please turn this script into an organized presentation format
     """
 
+    system_images_prompt = """
+    You are a keyword reworder. You will be given a list in the format of [Title of Slide, Point 1 of Slide, Point 2 of Slide, ..., Point X of Slide
+    Your job is to create a search query for an unsplash api for the slide in the presentation list and 
+    to produce a query in the format of $JSON_BLOB: 
+    {{\n\
+        "action": "Creating Image Query",
+        "query": Query Here. Keep the query to as little words as possible (1 word is preferrable, max of 4)    
+    }}\n\
+    BE SURE TO ALWAYS RETURN IN THE FORMAT SPECIFIED, AND ENSURE ONLY ONE QUERY IS GENERATED
+    """
+
+    human_images_prompt = """
+    Here is the slide:
+
+    {slide}
+
+    Please create an image query for each slide
+    """
+
     organization_prompt = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate(prompt=PromptTemplate(input_variables=[], template=system_organizer_prompt)),
         HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['script'], template=human_organizer_prompt)),
@@ -97,10 +110,16 @@ def get_presentation(text):
         HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['presentation'], template=human_points_prompt)),
     ])
 
+    images_prompt = ChatPromptTemplate.from_messages([
+        SystemMessagePromptTemplate(prompt=PromptTemplate(input_variables=[], template=system_images_prompt)),
+        HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['slides'], template=human_images_prompt))
+    ])
+
     llm = ChatOpenAI(temperature=0.3, model="gpt-3.5-turbo-0125")
 
     organizer = (organization_prompt | llm)
     point_maker = (point_maker_prompt | llm)
+    image = (images_prompt | llm)
 
     response = organizer.invoke({"script": text}).content
     response = response[52:]
@@ -122,12 +141,47 @@ def get_presentation(text):
                 end = i + 1
                 extracted_list = pres_list[start:end]
     parsed_list = ast.literal_eval(extracted_list)
-    
+    image_query_list = []
+    for slide in parsed_list:
+        slide = str(slide)
+        image_query = image.invoke({"slide":slide}).content
+        print(image_query)
+        json_string = image_query.strip()
+        start_index = json_string.find('"query": "') + len('"query": "')
+        end_index = json_string.find('"', start_index)
+        query = json_string[start_index:end_index]
+        print(query)
+        image_query_list.append(query)
 
-    final_list = []
-    first = True
-    first_mini = True
-    idx = 0
+    del image_query_list[0]
+
+    url = "https://api.unsplash.com/search/photos"
+    valid_image = []
+    counter = 0
+    for query in image_query_list:
+        counter += 1
+        file_name = f'{counter}.png'
+        params = {
+        "query": query,
+        "client_id": unsplash_api_key,
+        "per_page": 1 
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        results = response.json()
+
+        if results['total'] == 0:
+            valid_image.append(False)
+            print(f"Failed to find image for {query}")
+            continue
+
+        image_url = results['results'][0]['urls']['regular']
+        image_response = requests.get(image_url)
+        image_response.raise_for_status()
+        image = Image.open(BytesIO(image_response.content))
+        image.save(file_name)
+        valid_image.append(True)
+
     first = True
     first_mini = True
     for value in parsed_list:
@@ -146,5 +200,16 @@ def get_presentation(text):
                 else:
                     print(f"- {point}")
         first_mini = True
+    print(f"Image Queries: {image_query_list}")
+
+
+
     return parsed_list
 
+text = """To live, or not to live: that is the question. Is it more noble to put up with all the difficulties that fate throws our way, or to fight against them, and, in fighting them, put an end to everything? Death is like sleeping, that's all. A kind of sleep that ends the countless heartaches and sufferings that are part of life – now that's something to be desired. To die, to sleep – and during this sleep, maybe we dream.
+
+But that's the problem. In that sleep-like death, when we've finally been released from this painful life, who knows what dreams we'll have? That's enough to make us hesitate, to keep on suffering, and to put up with a horrible existence for so long. Otherwise, who would put up with the slaps and insults we endure over time, the wrongs done to us by the powerful, the arrogance of proud men, the heartaches of rejected love, the bureaucracy in the courts, the rudeness of bureaucrats, and the offenses dished out by unworthy people, that we patiently accept– when we could just settle our account with God by using a dagger on ourselves?
+
+Who would carry these heavy burdens, grunting and sweating under an exhausting life, if it weren't for the fear of something worse in the afterlife, that unknown country from whose border nobody ever returns? This fear bewilders us, and makes us prefer the troubles we know, rather than run off to troubles we don't know. In the end, contemplating the afterlife makes us cowards, and the bright color of our bravery is turned pale by our contemplation. And all our ambitious plans get put on hold while we think about this, and end up never being executed."""
+
+get_presentation(text)
