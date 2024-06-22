@@ -2,16 +2,20 @@
     "name": "Speech2SlAIdes",
     "version": "1.0.0",
     "description": "Record your speech and get a presentation!",
-    "manifest_version": 3,
+    "manifest_version": 2,
     "author": "WaffleHacks",
-    "action":{
-        "default_popup": "index.html",
-        "default_title": "Speech2SlAIdes",
-        "default_icon": {
-            "16": "Icons/slaides.png",
-            "32": "Icons/slaides.png",
-            "48": "Icons/slaides.png",
-            "128": "Icons/slaides.png"
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
         }
+    },
+    "icons": {
+        "16": "Icons/slaides.png",
+        "32": "Icons/slaides.png",
+        "48": "Icons/slaides.png",
+        "128": "Icons/slaides.png"
+    },
+    "permissions": {
+        "audioCapture"
     }
 }
