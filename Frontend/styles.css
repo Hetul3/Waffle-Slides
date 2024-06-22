@@ -5,12 +5,10 @@
     --yellow: #E2C044;
 }
 
-html
-{
+html {
     width: 400px;  /* max: 800px */
     height: 200px; /* max: 600px */
 }
-
 
 * {
     margin: 0;
@@ -26,7 +24,6 @@ body {
 header {
     background-color: #6E8898;
     display: flex;
-    
 }
 
 main {
@@ -55,7 +52,7 @@ h1 {
     font-weight: 200;
     letter-spacing: 1px;
     margin-top: 10px;
-    padding: 13px 20px 13px;
+    padding: 13px 20px;
     outline: 0;
     border: 1px solid black;
     cursor: pointer;
@@ -64,8 +61,12 @@ h1 {
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-  }
-  
+    width: 100px; /* Set a fixed width */
+    height: 50px; /* Set a fixed height */
+    line-height: 24px; /* Adjust line-height for centering */
+    text-align: center;
+}
+
 .record:after {
     content: "";
     background-color: var(--yellow);
@@ -77,19 +78,20 @@ h1 {
     left: 7px;
     transition: 0.2s;
 }
-  
+
 .record:hover:after {
     top: 0px;
     left: 0px;
 }
 
-.record-clicked {
-    font-size:large;
+.record-clicked:after {
+    background-color: red;
 }
 
-  
 @media (min-width: 768px) {
     .record {
-      padding: 13px 50px 13px;
+        padding: 13px 50px;
+        width: auto; /* Adjust width for larger screens */
+        height: auto; /* Adjust height for larger screens */
     }
 }
