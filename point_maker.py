@@ -34,7 +34,9 @@ system_organizer_prompt = """You are a slide organizer. You are given the script
 reorganize the speech so that it is presentable, under different topics. You will start by providing a title for 
 the presentation. Then, a table of contents. Then, the title of a section, followed by the information from the 
 script of the section, followed by the end of the section. This will be repeated for every section, until the end.
-KEEP TITLES UNDER 7 WORDS
+KEEP TITLES UNDER 7 WORDS. ENSURE THAT THE INFO UNDER THE TITLE IS VERY DESCRIPTIVE WITH GIVEN INFORMATION.
+Try to make the info for each slide at least 5 sentences. Do not just write "detailed steps on how..." Write an actual detailed
+description
 
 Ensure to return this as a $JSON_BLOB
 {{\n\
@@ -50,7 +52,12 @@ Ensure to return this as a $JSON_BLOB
   #####
   TITLE_3
   info
-  #####"
+  #####
+  .....
+  #####
+  TITLE_X
+  info
+  "
 }}\n\
 """
 
@@ -71,5 +78,20 @@ llm = ChatOpenAI(temperature=0.3, model="gpt-3.5-turbo-0125")
 
 organizer = (organization_prompt | llm)
 
-response = (organizer.invoke({"script": text})).content
+response = organizer.invoke({"script": text}).content
+response = response[52:]
+response = response[:-3]
+print(response)
+# phrase = "\"presentation\": \""
+# print(phrase)
+# sliding_window = ""
+# counter = 0
+# for letter in response:
+#     if len(sliding_window) == 17:
+#         sliding_window = sliding_window[1:]
+#     sliding_window += letter
+#     if sliding_window == phrase:
+#         print(counter)
+#     counter += 1
+
 
