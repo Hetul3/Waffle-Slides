@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
+:root {
+    --white: #D3D0CB;
+    --yellow: #E2C044;
+}
+
+html
+{
+    width: 400px;  /* max: 800px */
+    height: 200px; /* max: 600px */
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Lexend";
+    background-color: #D3D0CB;
+}
+
+header {
+    background-color: #6E8898;
+    display: flex;
+    
+}
+
+main {
+    padding-top: 25px;
+    color: #223C4A;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: var(--white)
+}
+
+.Title {
+    display: flex;
+}
+
+.ai {
+    color: var(--yellow);
+}
+
+.record {
+    font-family: "Lexend";
+    font-size: 16px;
+    font-weight: 200;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border: 1px solid black;
+    cursor: pointer;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  
+.record:after {
+    content: "";
+    background-color: var(--yellow);
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
+}
+  
+.record:hover:after {
+    top: 0px;
+    left: 0px;
+}
+
+.record-clicked {
+    font-size:large;
+}
+
+  
+@media (min-width: 768px) {
+    .record {
+      padding: 13px 50px 13px;
+    }
+}
