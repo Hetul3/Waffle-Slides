@@ -2,7 +2,7 @@ from google.cloud import speech
 from google.api_core.exceptions import GoogleAPICallError, InvalidArgument
 
 client = speech.SpeechClient.from_service_account_file('cloud_key.json')
-file_name = "tobeornottobegi.wav"
+file_name = "tobeornottobe.wav"
 
 try:
     with open(file_name, "rb") as f:
