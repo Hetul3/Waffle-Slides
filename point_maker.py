@@ -202,8 +202,6 @@ def get_presentation(text):
         first_mini = True
     print(f"Image Queries: {image_query_list}")
 
-
-
     return parsed_list
 
 text = """To live, or not to live: that is the question. Is it more noble to put up with all the difficulties that fate throws our way, or to fight against them, and, in fighting them, put an end to everything? Death is like sleeping, that's all. A kind of sleep that ends the countless heartaches and sufferings that are part of life – now that's something to be desired. To die, to sleep – and during this sleep, maybe we dream.
