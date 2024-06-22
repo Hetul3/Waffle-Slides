@@ -1,79 +1,174 @@
 import os.path
+import webbrowser
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload
+from PIL import Image
+
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/presentations"]
-
+SCOPES = [
+    "https://www.googleapis.com/auth/presentations",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive"
+]
 # The ID of a sample presentation.
 PRESENTATION_ID = "1OOvlh9s-sd5PHptLi0N3NGKxKYxNdOcPZLbcGcjL-go"
+
+def resize_and_convert(image_path, size=(600, 450)):
+    """Resize and convert image to a supported format (PNG)."""
+    img = Image.open(image_path)
+    img = img.resize(size)
+    new_image_path = os.path.splitext(image_path)[0] + ".png"
+    img.save(new_image_path, "PNG")
+    return new_image_path
 
 def main():
     """Shows basic usage of the Slides API.
     Prints the number of slides and elements in a sample presentation.
     """
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first time.
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
     
-    # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=8000)
-        # Save the credentials for the next run
         with open("token.json", "w") as token:
             token.write(creds.to_json())
 
     try:
         service = build("slides", "v1", credentials=creds)
-
-        # Call the Slides API
         presentation = service.presentations().get(presentationId=PRESENTATION_ID).execute()
         slides = presentation.get("slides")
 
         print(f"The presentation contains {len(slides)} slides:")
-        for i, slide in enumerate(slides):
-            print(f"- Slide #{i + 1} contains {len(slide.get('pageElements'))} elements.")
 
-        # Create new slides and add titles to them
-        titles = ["testing1", "testing2", "testing3"]
-        for i, title in enumerate(titles):
+        i = 1
+        while True:
+            image_path = f"{i}.png"
+            if not os.path.exists(image_path):
+                break
+
+            image = resize_and_convert(image_path)
+
+            drive_service = build("drive", "v3", credentials=creds)
+            file_metadata = {
+                "name": image,
+                "mimeType": "image/png"
+            }
+            media = MediaFileUpload(image, mimetype="image/png", resumable=True)
+            image_file = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+
+            drive_service.permissions().create(
+                fileId=image_file['id'],
+                body={
+                    'type': 'anyone',
+                    'role': 'reader',
+                },
+                fields='id',
+            ).execute()
+            
             requests = [
                 {
                     "createSlide": {
-                        "objectId": f"slide{i+1}",
-                        "insertionIndex": i+1,
+                        "objectId": f"slide{i}",
+                        "insertionIndex": i,
                         "slideLayoutReference": {
-                            "predefinedLayout": "TITLE_AND_TWO_COLUMNS"
-                        },
-                        "placeholderIdMappings": [
-                            {
-                                "layoutPlaceholder": {
-                                    "type": "TITLE",
-                                    "index": 0
-                                },
-                                "objectId": f"title{i+1}"
-                            }
-                        ]
+                            "predefinedLayout": "BLANK"
+                        }
                     }
                 },
                 {
-                    "insertText": {
-                        "objectId": f"title{i+1}",
-                        "text": title,
-                        "insertionIndex": 0
+                    "createShape": {
+                        "objectId": f"title{i}",
+                        "shapeType": "TEXT_BOX",
+                        "elementProperties": {
+                            "pageObjectId": f"slide{i}",
+                            "size": {
+                                "height": {
+                                    "magnitude": 1000000,
+                                    "unit": "EMU"
+                                },
+                                "width": {
+                                    "magnitude": 4572000,
+                                    "unit": "EMU"
+                                }
+                            },
+                            "transform": {
+                                "scaleX": 1,
+                                "scaleY": 1,
+                                "translateX": 0,
+                                "translateY": 0,
+                                "unit": "EMU"
+                            }
+                        }
+                    }
+                },
+                {
+                    "createShape": {
+                        "objectId": f"text{i}",
+                        "shapeType": "TEXT_BOX",
+                        "elementProperties": {
+                            "pageObjectId": f"slide{i}",
+                            "size": {
+                                "height": {
+                                    "magnitude": 4143500,
+                                    "unit": "EMU"
+                                },
+                                "width": {
+                                    "magnitude": 4572000,
+                                    "unit": "EMU"
+                                }
+                            },
+                            "transform": {
+                                "scaleX": 1,
+                                "scaleY": 1,
+                                "translateX": 0,
+                                "translateY": 1000000,
+                                "unit": "EMU"
+                            }
+                        }
+                    }
+                },
+                {
+                    "createImage": {
+                        "objectId": f"image{i}",
+                        "url": f"https://drive.google.com/uc?id={image_file['id']}",
+                        "elementProperties": {
+                            "pageObjectId": f"slide{i}",
+                            "size": {
+                                "height": {
+                                    "magnitude": 2812500,
+                                    "unit": "EMU"
+                                },
+                                "width": {
+                                    "magnitude": 3750000,
+                                    "unit": "EMU"
+                                }
+                            },
+                            "transform": {
+                                "scaleX": 1,
+                                "scaleY": 1,
+                                "translateX": 5297000, 
+                                "translateY": 1265625,
+                                "unit": "EMU"
+                            }
+                        }
                     }
                 }
             ]
             service.presentations().batchUpdate(presentationId=PRESENTATION_ID, body={"requests": requests}).execute()
+
+            i += 1
+
+        webbrowser.open(f"https://docs.google.com/presentation/d/{PRESENTATION_ID}/edit")
 
     except HttpError as err:
         print(err)
