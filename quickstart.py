@@ -120,6 +120,8 @@ def main():
         ]
         service.presentations().batchUpdate(presentationId=PRESENTATION_ID, body={"requests": title_slide_request}).execute()
         
+        drive_service = build('drive', 'v3', credentials=creds)
+        
         for i, slide_content in enumerate(presentation_text[1:], start=1):
             slide_id = f"slide{i}"
             title_id = f"title{i}"
@@ -184,6 +186,7 @@ def main():
                     }
                 }
             ]
+            
 
             # Create a new text box for each bullet point
             for j, bullet_point in enumerate(slide_content[1:], start=1):
@@ -237,12 +240,60 @@ def main():
                             },
                             "fields": "fontSize"
                         }
-                    }
+                    },
                 ]
 
                 slide_request.extend(bullet_request)
+            
+            # Upload the image to Google Drive
+            image_path = f"{i}.png"
+            if os.path.exists(image_path):
+                image = resize_and_convert(image_path)
+                drive_service = build("drive", "v3", credentials=creds)
+                file_metadata = {
+                    "name": image,
+                    "mimeType": "image/png"
+                }
+                media = MediaFileUpload(image, mimetype="image/png", resumable=True)
+                image_file = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+                drive_service.permissions().create(
+                    fileId=image_file['id'],
+                    body={
+                        'type': 'anyone',
+                        'role': 'reader',
+                    },
+                    fields='id',
+                ).execute()
 
-            service.presentations().batchUpdate(presentationId=PRESENTATION_ID, body={"requests": slide_request}).execute()
+                image_id = f"image_{uuid4().hex}"  # Generate unique image ID
+
+                slide_request.append({
+                    "createImage": {
+                        "objectId": image_id,
+                        "url": f"https://drive.google.com/uc?id={image_file['id']}",
+                        "elementProperties": {
+                            "pageObjectId": slide_id,
+                            "size": {
+                                "height": {
+                                    "magnitude": 2812500,
+                                    "unit": "EMU"
+                                },
+                                "width": {
+                                    "magnitude": 3750000,
+                                    "unit": "EMU"
+                                }
+                            },
+                            "transform": {
+                                "scaleX": 1,
+                                "scaleY": 1,
+                                "translateX": 5297000,
+                                "translateY": 1265625,
+                                "unit": "EMU"
+                            }
+                        }
+                    }
+                })
+                service.presentations().batchUpdate(presentationId=PRESENTATION_ID, body={"requests": slide_request}).execute()
 
         # i = 1
         # while True:
