@@ -17,6 +17,7 @@ def allowed_file(filename):
 
 @app.route("/", methods=['GET'])
 def test():
+    print("hellow orld")
     return "Test message: The page loaded successfully!"
     
 
@@ -37,5 +38,6 @@ def upload_file():
         return jsonify({'error': 'Allowed file types are mp3'}), 400
 
 if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the upload folder if it doesn't exist
     app.run(debug=True)
