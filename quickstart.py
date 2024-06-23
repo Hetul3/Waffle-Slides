@@ -9,9 +9,12 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image
 from point_maker import get_presentation
 from uuid import uuid4
-from api import upload_file
-def get_sample_text():
-    sample_text = upload_file
+
+
+with open('output.txt', 'r') as f:
+    sample_text = f.read()
+    
+presentation_text = get_presentation(sample_text)
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
@@ -30,11 +33,10 @@ def resize_and_convert(image_path, size=(600, 450)):
     img.save(new_image_path, "PNG")
     return new_image_path
 
-def main():
+def slides():
     """Shows basic usage of the Slides API.
     Prints the number of slides and elements in a sample presentation.
     """
-    get_sample_text()
     creds = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -333,7 +335,7 @@ def main():
         print(err)
 
 if __name__ == "__main__":
-    main()
+    slides()
 
 # sample_text = "Malcolm X was one of the most dynamic, dramatic and influential figures of the civil rights era..."
 # presentation_text = get_presentation(sample_text)

@@ -203,3 +203,4 @@ def get_presentation(text):
     print(f"Image Queries: {image_query_list}")
 
     return parsed_list
+
