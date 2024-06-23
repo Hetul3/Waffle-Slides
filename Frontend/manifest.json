@@ -1,0 +1,13 @@
+{
+    "name": "Speech2SlAIdes",
+    "version": "1.0.0",
+    "description": "Record your speech and get a presentation!",
+    "manifest_version": 3,
+    "author": "WaffleHacks",
+    "icons": {
+        "16": "Icons/slaides.png",
+        "32": "Icons/slaides.png",
+        "48": "Icons/slaides.png",
+        "128": "Icons/slaides.png"
+    }
+}
