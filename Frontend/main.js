@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const record_button = document.getElementById('record');
     let audioChunks = [];
     let rec;
-    let recordedAudio = new Audio();
     let isRecording = false;
 
     record_button.onclick = async () => {
@@ -13,11 +12,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 rec.ondataavailable = e => {
                     audioChunks.push(e.data);
                     if (rec.state === "inactive") {
-                        let blob = new Blob(audioChunks, { type: 'audio/mpeg-3' });
-                        recordedAudio.src = URL.createObjectURL(blob);
-                        recordedAudio.controls = true;
-                        recordedAudio.autoplay = true;
-                        sendData(blob);
+                        uploadBlob()
+                            .then(response => {
+                                console.log(response);
+                            })
+                            .catch(error => {
+                                console.error("Error uploading audio", error);
+                            });
+                        audioChunks = [];
                     }
                 };
 
@@ -45,7 +47,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    function sendData(data) {
-        // Function to handle the data (e.g., send to server)
-    }
+    async function uploadBlob() {
+        let audioBlob = new Blob(audioChunks, { type: 'audio/mpeg-3' });
+        const formData = new FormData();
+        formData.append('audio_data', audioBlob, 'file');
+        formData.append('type', 'mp3');
+      
+        // Your server endpoint to upload audio:
+        const apiUrl = "http://localhost:3000/upload/audio";
+      
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          cache: 'no-cache',
+          body: formData
+        });
+        
+        console.log("done");
+        return response.json();
+      }
 });
