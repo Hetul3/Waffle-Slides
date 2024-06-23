@@ -164,9 +164,10 @@ def main():
                     }
                 }
             ]
+            i += 1
             service.presentations().batchUpdate(presentationId=PRESENTATION_ID, body={"requests": requests}).execute()
 
-            i += 1
+            
 
         webbrowser.open(f"https://docs.google.com/presentation/d/{PRESENTATION_ID}/edit")
 

@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const record_button = document.getElementById('record');
+    const recordButton = document.getElementById('record');
     let audioChunks = [];
     let rec;
     let isRecording = false;
 
-    record_button.onclick = async () => {
+    recordButton.onclick = async () => {
         if (!isRecording) {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rec.ondataavailable = e => {
                     audioChunks.push(e.data);
                     if (rec.state === "inactive") {
+                        saveRecording();
                         uploadBlob()
                             .then(response => {
                                 console.log(response);
@@ -24,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 console.log('Start recording');
-                record_button.textContent = 'Stop';
-                record_button.classList.add('record-clicked');
+                recordButton.textContent = 'Stop';
+                recordButton.classList.add('record-clicked');
                 audioChunks = [];
                 rec.start();
                 isRecording = true;
@@ -40,29 +41,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             console.log('Stop recording');
-            record_button.textContent = 'Record';
-            record_button.classList.remove('record-clicked');
+            recordButton.textContent = 'Record';
+            recordButton.classList.remove('record-clicked');
             rec.stop();
             isRecording = false;
         }
     };
 
+    function saveRecording() {
+        let blob = new Blob(audioChunks, { type: 'audio/mpeg' }); // Adjust the MIME type as needed
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'recording.mp3'; // Set the file name and extension
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+    }
+
     async function uploadBlob() {
-        let audioBlob = new Blob(audioChunks, { type: 'audio/mpeg-3' });
+        let audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
         const formData = new FormData();
-        formData.append('audio_data', audioBlob, 'file');
-        formData.append('type', 'mp3');
-      
+        formData.append('audio', audioBlob, 'recording.mp3'); // Adjust the field name and filename as needed
+
         // Your server endpoint to upload audio:
-        const apiUrl = "http://localhost:3000/upload/audio";
-      
+        const apiUrl = "http://localhost:3000/upload";
+
         const response = await fetch(apiUrl, {
-          method: 'POST',
-          cache: 'no-cache',
-          body: formData
+            method: 'POST',
+            cache: 'no-cache',
+            body: formData
         });
-        
-        console.log("done");
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         return response.json();
-      }
+    }
 });
