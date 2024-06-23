@@ -1,7 +1,5 @@
 # Speech2SlAIdes
 
-**How We Built It**
-
 Frontend
 - **HTML** interface with a button to record audio
 - **JavaScript** handles the recording process and sends the audio file to the backend for processing.
