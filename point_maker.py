@@ -123,28 +123,28 @@ def get_presentation(text):
                 extracted_list = pres_list[start:end]
     parsed_list = ast.literal_eval(extracted_list)
     
-
-    final_list = []
-    first = True
-    first_mini = True
-    idx = 0
-    first = True
-    first_mini = True
-    for value in parsed_list:
-        if first:
-            print("\n")
-            print(value)
-            print("\n")
-            first = False
-        elif not first:
-            for point in value:
-                if first_mini:
-                    print("\n")
-                    print(point)
-                    print("\n")
-                    first_mini = False
-                else:
-                    print(f"- {point}")
-        first_mini = True
+    # final_list = []
+    # first = True
+    # first_mini = True
+    # idx = 0
+    # first = True
+    # first_mini = True
+    # for value in parsed_list:
+    #     if first:
+    #         print("\n")
+    #         print(value)
+    #         print("\n")
+    #         first = False
+    #     elif not first:
+    #         for point in value:
+    #             if first_mini:
+    #                 print("\n")
+    #                 print(point)
+    #                 print("\n")
+    #                 first_mini = False
+    #             else:
+    #                 print(f"- {point}")
+    #     first_mini = True
+    print(extracted_list)
     return parsed_list
 
