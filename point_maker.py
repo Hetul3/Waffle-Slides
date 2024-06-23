@@ -203,11 +203,3 @@ def get_presentation(text):
     print(f"Image Queries: {image_query_list}")
 
     return parsed_list
-
-text = """To live, or not to live: that is the question. Is it more noble to put up with all the difficulties that fate throws our way, or to fight against them, and, in fighting them, put an end to everything? Death is like sleeping, that's all. A kind of sleep that ends the countless heartaches and sufferings that are part of life – now that's something to be desired. To die, to sleep – and during this sleep, maybe we dream.
-
-But that's the problem. In that sleep-like death, when we've finally been released from this painful life, who knows what dreams we'll have? That's enough to make us hesitate, to keep on suffering, and to put up with a horrible existence for so long. Otherwise, who would put up with the slaps and insults we endure over time, the wrongs done to us by the powerful, the arrogance of proud men, the heartaches of rejected love, the bureaucracy in the courts, the rudeness of bureaucrats, and the offenses dished out by unworthy people, that we patiently accept– when we could just settle our account with God by using a dagger on ourselves?
-
-Who would carry these heavy burdens, grunting and sweating under an exhausting life, if it weren't for the fear of something worse in the afterlife, that unknown country from whose border nobody ever returns? This fear bewilders us, and makes us prefer the troubles we know, rather than run off to troubles we don't know. In the end, contemplating the afterlife makes us cowards, and the bright color of our bravery is turned pale by our contemplation. And all our ambitious plans get put on hold while we think about this, and end up never being executed."""
-
-get_presentation(text)
