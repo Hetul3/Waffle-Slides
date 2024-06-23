@@ -9,9 +9,9 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image
 from point_maker import get_presentation
 from uuid import uuid4
-
-sample_text = "Good morning, everyone. Today, I'm excited to talk to you about mitochondria, often called the powerhouse of the cell. Mitochondria are tiny organelles found in almost every cell in our bodies. They play a crucial role in generating energy by converting glucose and oxygen into ATP, which is the energy currency cells use for their functions. But that's not all—they also help regulate cell growth, death, and even have their own DNA, which is fascinating because it suggests they were once independent organisms billions of years ago. Understanding mitochondria is key to learning how our cells, and ultimately our bodies, function. Thank you!"
-presentation_text = get_presentation(sample_text)
+from api import upload_file
+def get_sample_text():
+    sample_text = upload_file
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
@@ -34,6 +34,7 @@ def main():
     """Shows basic usage of the Slides API.
     Prints the number of slides and elements in a sample presentation.
     """
+    get_sample_text()
     creds = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)

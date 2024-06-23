@@ -49,7 +49,8 @@ def upload_file():
             )
 
             response = client.recognize(config=config, audio=audio_file)
-            print(response)
+            sentence = response.results[0].alternatives[0].transcript
+            return sentence
         except GoogleAPICallError as e:
             print(f"An error occurred during the API call: {e}")
         except InvalidArgument as e:
@@ -57,7 +58,6 @@ def upload_file():
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
         
-        return jsonify({'message': 'File uploaded successfully', 'file_path': file_path}), 200
     else:
         return jsonify({'error': 'File type not allowed'}), 400
 
